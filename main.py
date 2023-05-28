@@ -12,14 +12,8 @@ driver = webdriver.Chrome(options=chrome_options)
 # Get user input
 surname = input("Enter a surname: ")
 
-
-# Run Chrome Driver in headless mode
-
-
-
 # URL of the website to scrape
 url = f"https://www.ancestry.com/name-origin?surname={surname}"
-urlTwo = f"https://forebears.io/surnames/{surname}"
 
 # Open the website
 driver.get(url)
@@ -30,7 +24,22 @@ try:
     element = driver.find_element(By.XPATH, '//*[@id="minMeaningHeight"]/p[1]')
     lastNameOrigin = element.text.split(':')[0]
 except:
-    lastNameOrigin = 'No results found'
+    try:
+        url = f"https://forebears.io/surnames/{surname}"
+        driver.get(url)
+        element = driver.find_element(By.XPATH, '/html/body/section/div/div[2]/div[2]/div[1]/div/div[1]/p')
+        lastNameOrigin = element.text 
+        if lastNameOrigin == "The meaning of this surname is not listed.":
+            lastNameOrigin = 'No results found'
+        else:
+            try:
+                lastNameOrigin = lastNameOrigin.split(';')[0]
+            except:
+                print('error splitting surname text from forebears.io')
+                driver.close()
+                exit()
+    except:
+        lastNameOrigin = 'No results found'
 
 print(lastNameOrigin)
 
